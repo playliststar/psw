@@ -63,6 +63,10 @@ jobs:
         node --unhandled-rejections=strict playliststar get_tracks_100)
 
     - name: Build
+      env:
+        SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+        SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+        SPOTIFY_ACCOUNT_REFRESH_TOKEN: ${{ secrets.SPOTIFY_ACCOUNT_REFRESH_TOKEN }}
       run: |
         (cd playliststar/playliststar-extractor && node --unhandled-rejections=strict playliststar build) &&
         rm -rf playliststar-www/* && cp -al playliststar/www/public/* playliststar-www/ &&
