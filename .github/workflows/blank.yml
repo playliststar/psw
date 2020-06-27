@@ -1,0 +1,90 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Build
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    # - cron:  '38 * * * 5'
+    - cron:  '08 * * * *'
+    - cron:  '38 * * * 5'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Setup
+      env:
+        PLAYLISTSTAR_DEPLOY_KEY: ${{ secrets.PLAYLISTSTAR_DEPLOY_KEY }}
+      run: |
+        echo "$PLAYLISTSTAR_DEPLOY_KEY" > ~/id && chmod 600 ~/id &&
+        git config --global core.sshCommand "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ~/id" &&
+        git config --global user.name "Playliststar CI" && git config --global user.email playliststar.com@gmail.com &&
+        git clone --depth 1 -b master git@gitlab.com:playliststar/playliststar.git &&
+        ln -s ../playliststar-data playliststar/data2
+
+    - name: Setup data
+      run: |
+        git clone -b data git@github.com:playliststar/playliststar-data.git playliststar-data
+
+    - name: Setup www
+      run: |
+        git clone --no-checkout git@github.com:playliststar/playliststar-www.git playliststar-www
+
+    - name: Cache
+      uses: actions/cache@v2
+      with:
+        path: |
+          playliststar/playliststar-extractor/node_modules
+        key: psw-npm-${{ hashFiles('playliststar/playliststar-extractor/package-lock.json') }}
+
+    - name: Poll Update
+      env:
+        SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+        SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+        SPOTIFY_ACCOUNT_REFRESH_TOKEN: ${{ secrets.SPOTIFY_ACCOUNT_REFRESH_TOKEN }}
+      run: |
+        (cd playliststar/playliststar-extractor &&
+        ([[ -f node_modules/spotify-web-api-node/package.json ]] || npm i) &&
+        node --unhandled-rejections=strict playliststar get_playlists &&
+        node --unhandled-rejections=strict playliststar get_tracks_100 &&
+        node --unhandled-rejections=strict playliststar get_playlists &&
+        node --unhandled-rejections=strict playliststar get_tracks_100 &&
+        node --unhandled-rejections=strict playliststar get_playlists &&
+        node --unhandled-rejections=strict playliststar get_tracks_100)
+
+    - name: Build
+      run: |
+        (cd playliststar/playliststar-extractor && node --unhandled-rejections=strict playliststar build) &&
+        rm -rf playliststar-www/* && cp -al playliststar/www/public/* playliststar-www/ &&
+        rm -rf playliststar-www/data && cp -al playliststar/www/static-data playliststar-www/data
+
+    - name: Save www
+      run: |
+        (cd playliststar-www && 
+        if (( `git rev-list --count HEAD` > 16 )); then
+          git tag -f old && git push -f origin old &&
+          rm -rf .git && git init &&
+          git remote add origin git@github.com:playliststar/playliststar-www.git
+        fi &&
+        git add -A && git commit -m "save" > /dev/null && git push -u -f origin master)
+
+    - name: Save data
+      run: |
+        (cd playliststar-data && 
+        if (( `git rev-list --count HEAD` > 16 )); then
+          git tag -f data-old && git push -f origin data-old &&
+          rm -rf .git && git init && git checkout -b data &&
+          git remote add origin git@github.com:playliststar/playliststar-data.git
+        fi &&
+        git add -A && git commit -m "save" > /dev/null && git push -u -f origin data)
+
