@@ -25,11 +25,13 @@ jobs:
     - name: Setup
       env:
         PLAYLISTSTAR_DEPLOY_KEY: ${{ secrets.PLAYLISTSTAR_DEPLOY_KEY }}
+        EXTRACTOR_ENV: ${{ secrets.EXTRACTOR_ENV }}
       run: |
         echo "$PLAYLISTSTAR_DEPLOY_KEY" > ~/id && chmod 600 ~/id &&
         git config --global core.sshCommand "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ~/id" &&
         git config --global user.name "Playliststar CI" && git config --global user.email playliststar.com@gmail.com &&
         git clone --depth 1 -b master git@gitlab.com:playliststar/playliststar.git &&
+        echo "$EXTRACTOR_ENV" > playliststar/playliststar-extractor/.env &&
         ln -s ../playliststar-data playliststar/data2
 
     - name: Setup data
@@ -48,10 +50,6 @@ jobs:
         key: psw-npm-${{ hashFiles('playliststar/playliststar-extractor/package-lock.json') }}
 
     - name: Poll Update
-      env:
-        SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-        SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-        SPOTIFY_ACCOUNT_REFRESH_TOKEN: ${{ secrets.SPOTIFY_ACCOUNT_REFRESH_TOKEN }}
       run: |
         (cd playliststar/playliststar-extractor &&
         ([[ -f node_modules/spotify-web-api-node/package.json ]] || npm i) &&
@@ -63,10 +61,6 @@ jobs:
         node --unhandled-rejections=strict playliststar get_tracks_100)
 
     - name: Build
-      env:
-        SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-        SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-        SPOTIFY_ACCOUNT_REFRESH_TOKEN: ${{ secrets.SPOTIFY_ACCOUNT_REFRESH_TOKEN }}
       run: |
         (cd playliststar/playliststar-extractor && node --unhandled-rejections=strict playliststar build) &&
         rm -rf playliststar-www/* && cp -al playliststar/www/public/* playliststar-www/ &&
