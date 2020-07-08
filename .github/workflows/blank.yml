@@ -81,7 +81,7 @@ jobs:
         NETLIFY_TOKEN: ${{ secrets.NETLIFY_TOKEN }}
       run: |
         ([[ -f node_modules/.bin/netlify ]] || npm i netlify-cli) &&
-        ./node_modules/.bin/netlify deploy --site $NETLIFY_SITE_ID --auth $NETLIFY_AUTH_TOKEN --dir playliststar/www/public #--prod
+        ./node_modules/.bin/netlify deploy --site 9b8d26a0-7f56-45c1-9545-6e75078fbc60 --auth NETLIFY_TOKEN --dir playliststar/www/public #--prod
 
 
     # - name: Save www
