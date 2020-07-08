@@ -50,16 +50,16 @@ jobs:
           node_modules
         key: psw2-npm-${{ hashFiles('playliststar/playliststar-extractor/package-lock.json') }}
 
-    # - name: Poll Update
-    #   run: |
-    #     (cd playliststar/playliststar-extractor &&
-    #     ([[ -f node_modules/spotify-web-api-node/package.json ]] || npm i) &&
-    #     # node --unhandled-rejections=strict playliststar get_playlists &&
-    #     # node --unhandled-rejections=strict playliststar get_tracks_100 &&
-    #     # node --unhandled-rejections=strict playliststar get_playlists &&
-    #     # node --unhandled-rejections=strict playliststar get_tracks_100 &&
-    #     # node --unhandled-rejections=strict playliststar get_playlists &&
-    #     node --unhandled-rejections=strict playliststar get_tracks_100)
+    - name: Poll Update
+      run: |
+        (cd playliststar/playliststar-extractor &&
+        ([[ -f node_modules/spotify-web-api-node/package.json ]] || npm i) &&
+        # node --unhandled-rejections=strict playliststar get_playlists &&
+        # node --unhandled-rejections=strict playliststar get_tracks_100 &&
+        # node --unhandled-rejections=strict playliststar get_playlists &&
+        # node --unhandled-rejections=strict playliststar get_tracks_100 &&
+        # node --unhandled-rejections=strict playliststar get_playlists &&
+        node --unhandled-rejections=strict playliststar get_tracks_100)
 
     - name: Build
       run: |
