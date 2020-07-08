@@ -38,43 +38,33 @@ jobs:
       run: |
         git clone -b data git@github.com:playliststar/playliststar-data.git playliststar-data
 
-    - name: Setup www
-      run: |
-        git clone --no-checkout git@github.com:playliststar/playliststar-www.git playliststar-www
+    # - name: Setup www
+    #   run: |
+    #     git clone --no-checkout git@github.com:playliststar/playliststar-www.git playliststar-www
 
     - name: Cache
       uses: actions/cache@v2
       with:
         path: |
           playliststar/playliststar-extractor/node_modules
+          playliststar/playliststar-extractor/node_modules
         key: psw-npm-${{ hashFiles('playliststar/playliststar-extractor/package-lock.json') }}
 
-    - name: Poll Update
-      run: |
-        (cd playliststar/playliststar-extractor &&
-        ([[ -f node_modules/spotify-web-api-node/package.json ]] || npm i) &&
-        node --unhandled-rejections=strict playliststar get_playlists &&
-        node --unhandled-rejections=strict playliststar get_tracks_100 &&
-        node --unhandled-rejections=strict playliststar get_playlists &&
-        node --unhandled-rejections=strict playliststar get_tracks_100 &&
-        node --unhandled-rejections=strict playliststar get_playlists &&
-        node --unhandled-rejections=strict playliststar get_tracks_100)
+    # - name: Poll Update
+    #   run: |
+    #     (cd playliststar/playliststar-extractor &&
+    #     ([[ -f node_modules/spotify-web-api-node/package.json ]] || npm i) &&
+    #     # node --unhandled-rejections=strict playliststar get_playlists &&
+    #     # node --unhandled-rejections=strict playliststar get_tracks_100 &&
+    #     # node --unhandled-rejections=strict playliststar get_playlists &&
+    #     # node --unhandled-rejections=strict playliststar get_tracks_100 &&
+    #     # node --unhandled-rejections=strict playliststar get_playlists &&
+    #     node --unhandled-rejections=strict playliststar get_tracks_100)
 
     - name: Build
       run: |
         (cd playliststar/playliststar-extractor && node --unhandled-rejections=strict playliststar build) &&
-        rm -rf playliststar-www/* && cp -al playliststar/www/public/* playliststar-www/ &&
-        rm -rf playliststar-www/data && cp -al playliststar/www/static-data playliststar-www/data
-
-    - name: Save www
-      run: |
-        (cd playliststar-www && 
-        if (( `git rev-list --count HEAD` > 16 )); then
-          git tag -f old && git push -f origin old &&
-          rm -rf .git && git init &&
-          git remote add origin git@github.com:playliststar/playliststar-www.git
-        fi &&
-        git add -A && git commit -m "save" > /dev/null && git push -u -f origin master)
+        cp -al playliststar/www/static-data playliststar/www/data
 
     - name: Save data
       run: |
@@ -85,4 +75,23 @@ jobs:
           git remote add origin git@github.com:playliststar/playliststar-data.git
         fi &&
         git add -A && git commit -m "save" > /dev/null && git push -u -f origin data)
+
+    - name: Netlify deploy
+      env:
+        NETLIFY_TOKEN: ${{ secrets.NETLIFY_TOKEN }}
+      run: |
+        ([[ -f node_modules/.bin/netlify ]] || npm i netlify-cli) &&
+        ./node_modules/.bin/netlify deploy --site $NETLIFY_SITE_ID --auth $NETLIFY_AUTH_TOKEN --dir www/public #--prod
+
+
+    # - name: Save www
+    #   run: |
+    #     (cd playliststar-www && 
+    #     if (( `git rev-list --count HEAD` > 16 )); then
+    #       git tag -f old && git push -f origin old &&
+    #       rm -rf .git && git init &&
+    #       git remote add origin git@github.com:playliststar/playliststar-www.git
+    #     fi &&
+    #     git add -A && git commit -m "save" > /dev/null && git push -u -f origin master)
+
 
