@@ -47,7 +47,7 @@ jobs:
       with:
         path: |
           playliststar/playliststar-extractor/node_modules
-          playliststar/node_modules
+          node_modules
         key: psw2-npm-${{ hashFiles('playliststar/playliststar-extractor/package-lock.json') }}
 
     # - name: Poll Update
@@ -64,7 +64,7 @@ jobs:
     - name: Build
       run: |
         (cd playliststar/playliststar-extractor && node --unhandled-rejections=strict playliststar build) &&
-        cp -al playliststar/www/static-data playliststar/www/data
+        cp -al playliststar/www/static-data playliststar/www/public/data
 
     - name: Save data
       run: |
@@ -81,7 +81,7 @@ jobs:
         NETLIFY_TOKEN: ${{ secrets.NETLIFY_TOKEN }}
       run: |
         ([[ -f node_modules/.bin/netlify ]] || npm i netlify-cli) &&
-        ./node_modules/.bin/netlify deploy --site $NETLIFY_SITE_ID --auth $NETLIFY_AUTH_TOKEN --dir www/public #--prod
+        ./node_modules/.bin/netlify deploy --site $NETLIFY_SITE_ID --auth $NETLIFY_AUTH_TOKEN --dir playliststar/www/public #--prod
 
 
     # - name: Save www
