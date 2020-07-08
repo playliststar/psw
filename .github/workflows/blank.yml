@@ -87,4 +87,7 @@ jobs:
         fi &&
         git add -A && git commit -m "save" > /dev/null && git push -u -f origin master)
 
+    - name: Post build
+      run: |
+        (cd playliststar/playliststar-extractor && node --unhandled-rejections=strict playliststar post_build)
 
