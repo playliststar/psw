@@ -65,16 +65,6 @@ jobs:
       run: |
         (cd playliststar/playliststar-extractor && node --unhandled-rejections=strict playliststar build)
 
-    - name: Save data
-      run: |
-        (cd playliststar-data && 
-        if (( `git rev-list --count HEAD` > 16 )); then
-          git tag -f data-old && git push -f origin data-old &&
-          rm -rf .git && git init && git checkout -b data &&
-          git remote add origin git@github.com:playliststar/playliststar-data.git
-        fi &&
-        git add -A && git commit -m "save" > /dev/null && git push -u -f origin data)
-
     - name: Save www
       run: |
         rm -rf playliststar-www/* && cp -al playliststar/www/static-data/ playliststar-www/data/ && 
@@ -90,4 +80,14 @@ jobs:
     - name: Post build
       run: |
         (cd playliststar/playliststar-extractor && node --unhandled-rejections=strict playliststar post_build)
+
+    - name: Save data
+      run: |
+        (cd playliststar-data && 
+        if (( `git rev-list --count HEAD` > 16 )); then
+          git tag -f data-old && git push -f origin data-old &&
+          rm -rf .git && git init && git checkout -b data &&
+          git remote add origin git@github.com:playliststar/playliststar-data.git
+        fi &&
+        git add -A && git commit -m "save" > /dev/null && git push -u -f origin data)
 
