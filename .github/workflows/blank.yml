@@ -41,6 +41,9 @@ jobs:
     # - name: Setup www
     #   run: |
     #     git clone --no-checkout git@github.com:playliststar/playliststar-www.git playliststar-www
+    - name: Setup www
+      run: |
+        git clone --no-checkout git@github.com:playliststar/psww.git playliststar-www
 
     - name: Cache
       uses: actions/cache@v2
@@ -64,7 +67,9 @@ jobs:
     - name: Build
       run: |
         (cd playliststar/playliststar-extractor && node --unhandled-rejections=strict playliststar build) &&
-        cp -al playliststar/www/static-data playliststar/www/public/data
+        rm -rf playliststar-www/* && 
+        cp -al playliststar/www/static-data playliststar-www/data &&
+        cp -al playliststar/www/public playliststar-www
 
     - name: Save data
       run: |
@@ -76,23 +81,23 @@ jobs:
         fi &&
         git add -A && git commit -m "save" > /dev/null && git push -u -f origin data)
 
-    - name: Netlify deploy
-      env:
-        NETLIFY_TOKEN: ${{ secrets.NETLIFY_TOKEN }}
-      run: |
-        ([[ -f node_modules/.bin/netlify ]] || npm i netlify-cli) &&
-        ./node_modules/.bin/netlify deploy --site 9b8d26a0-7f56-45c1-9545-6e75078fbc60 --auth $NETLIFY_TOKEN --dir playliststar/www/public #--prod
-
-
-
-    # - name: Save www
+    # - name: Netlify deploy
+    #   env:
+    #     NETLIFY_TOKEN: ${{ secrets.NETLIFY_TOKEN }}
     #   run: |
-    #     (cd playliststar-www && 
-    #     if (( `git rev-list --count HEAD` > 16 )); then
-    #       git tag -f old && git push -f origin old &&
-    #       rm -rf .git && git init &&
-    #       git remote add origin git@github.com:playliststar/playliststar-www.git
-    #     fi &&
-    #     git add -A && git commit -m "save" > /dev/null && git push -u -f origin master)
+    #     ([[ -f node_modules/.bin/netlify ]] || npm i netlify-cli) &&
+    #     ./node_modules/.bin/netlify deploy --site 9b8d26a0-7f56-45c1-9545-6e75078fbc60 --auth $NETLIFY_TOKEN --dir playliststar/www/public #--prod
+
+
+
+    - name: Save www
+      run: |
+        (cd playliststar-www && 
+        if (( `git rev-list --count HEAD` > 16 )); then
+          git tag -f old && git push -f origin old &&
+          rm -rf .git && git init &&
+          git remote add origin git@github.com:playliststar/psww.git
+        fi &&
+        git add -A && git commit -m "save" > /dev/null && git push -u -f origin master)
 
 
