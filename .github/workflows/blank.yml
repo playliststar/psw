@@ -47,8 +47,8 @@ jobs:
       with:
         path: |
           playliststar/playliststar-extractor/node_modules
-          playliststar/playliststar-extractor/node_modules
-        key: psw-npm-${{ hashFiles('playliststar/playliststar-extractor/package-lock.json') }}
+          playliststar/node_modules
+        key: psw2-npm-${{ hashFiles('playliststar/playliststar-extractor/package-lock.json') }}
 
     # - name: Poll Update
     #   run: |
