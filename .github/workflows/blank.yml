@@ -63,8 +63,7 @@ jobs:
 
     - name: Build
       run: |
-        (cd playliststar/playliststar-extractor && node --unhandled-rejections=strict playliststar build) &&
-        rm -rf playliststar-www/* && cp -al playliststar/www/static-data/ playliststar-www/data/
+        (cd playliststar/playliststar-extractor && node --unhandled-rejections=strict playliststar build)
 
     - name: Save data
       run: |
@@ -78,6 +77,8 @@ jobs:
 
     - name: Save www
       run: |
+        rm -rf playliststar-www/* && cp -al playliststar/www/static-data/ playliststar-www/data/ && 
+        echo "data.playliststar.com" > playliststar-www/CNAME &&
         (cd playliststar-www && 
         if (( `git rev-list --count HEAD` > 16 )); then
           git tag -f old && git push -f origin old &&
