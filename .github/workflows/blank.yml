@@ -63,7 +63,9 @@ jobs:
 
     - name: Build
       run: |
-        (cd playliststar/playliststar-extractor && node --unhandled-rejections=strict playliststar build)
+        (cd playliststar/playliststar-extractor && 
+        node --unhandled-rejections=strict playliststar build && 
+        node --unhandled-rejections=strict playliststar build_tracks_index)
 
     - name: Save www
       run: |
